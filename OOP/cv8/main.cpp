@@ -1,52 +1,81 @@
 #include <iostream>
 using namespace std;
 
-#pragma region pacient
-class pacient
+#pragma region clovek
+class clovek
 {
 private:
-    string Jmeno;
+    string jmeno;
+    string email;
+    string telefoniCislo;
+    int rokNarozeni;
+public:
+    clovek(string j, string e, string t, int r);
+    int GetVek();
+    string GetJmeno();
+};
+
+clovek::clovek(string j, string e, string t, int r)
+{
+    this->jmeno = j;
+    this->email = e;
+    this->telefoniCislo = t;
+    this->rokNarozeni = r;
+}
+int clovek::GetVek(){
+    return 2024 - this->rokNarozeni;
+}
+string clovek::GetJmeno(){
+    return this->jmeno;
+}
+#pragma endregion
+#pragma region pacient
+class pacient : public clovek
+{
+private:
+    int cislo;
     string Nemoc;
 public:
-    pacient(string j, string n);
-    string GetJmeno();
+    pacient(string j, string e, string t, string n, int r, int c);
     string GetNemoc();
 };
-pacient::pacient(string j, string n){
-    this->Jmeno = j;
+pacient::pacient(string j, string e, string t, string n, int r, int c) : clovek(j, e, t, r){
     this->Nemoc = n;
+    this->cislo = c;
 }
-string pacient::GetJmeno(){
-    return this->Jmeno;
-}
+
 string pacient::GetNemoc(){
     return this->Nemoc;
 }
 #pragma endregion
-
 #pragma region zamestnanec
-class doktor
+class doktor : public clovek
 {
 private:
-    string Jmeno;
     string Pozice;
+    int smena;
+    pacient** osetruje;
+    int osetrujecount;
 public:
-    doktor(string j, string p);
-    string GetJmeno();
+    doktor(string j, string e, string t, int r, string p);
     string GetPozice();
+    pacient* NastavitOSetruje(pacient* p);
 };
-doktor::doktor(string j, string p){
-    this->Jmeno = j;
+doktor::doktor(string j, string e, string t, int r, string p) : clovek(j, e, t, r){
     this->Pozice = p;
-}
-string doktor::GetJmeno(){
-    return this->Jmeno;
+    this->smena = 0;
+    this->osetruje = new pacient*[10];
+    this->osetrujecount = 0;
 }
 string doktor::GetPozice(){
     return this->Pozice;
 }
+pacient* doktor::NastavitOSetruje(pacient* p){
+    this->osetruje[this->osetrujecount] = p;
+    this->osetrujecount += 1;
+    return this->osetruje[this->osetrujecount-1];
+}
 #pragma endregion
-
 #pragma region pokoj
 class pokoj
 {
@@ -58,7 +87,7 @@ private:
 public:
     pokoj(int c, int l);
     ~pokoj();
-    pacient* VytvoritPacienta(string j, string n);
+    pacient* VytvoritPacienta(string j, string e, string t, string n, int r, int c);
     pacient* GetPacienta(string j);
     pacient* OdebratPacienta(string j);
     int GetCislo();
@@ -78,10 +107,10 @@ pokoj::~pokoj(){
     }
     delete[] this->Pacienti;
 }
-pacient* pokoj::VytvoritPacienta(string j, string n){
+pacient* pokoj::VytvoritPacienta(string j, string e, string t, string n, int r, int c){
     if (this->JeMisto())
     {
-        this->Pacienti[this->PacientiCount] = new pacient(j, n);
+        this->Pacienti[this->PacientiCount] = new pacient(j, e, t, n, r, c);
         this->PacientiCount++;
         return this->Pacienti[this->PacientiCount-1];
     }
@@ -132,7 +161,6 @@ int pokoj::PocetvolnychMist(){
     return 0;
 }
 #pragma endregion
-
 #pragma region nemocnice
 class nemocnice
 {
@@ -144,12 +172,12 @@ private:
 public:
     nemocnice(int z, int p);
     ~nemocnice();
-    doktor* VytvoritZamestnance(string j, string p);
+    doktor* VytvoritZamestnance(string j, string e, string t, int r, string p);
     doktor* GetZamestnance(string j);
     pokoj* VytvoritPokoj(int c, int l);
     pokoj* GetPokoj(int c);
     pokoj** GetVolnePokoje(int& len);
-    bool PridelitPokoj(string j, string n);
+    bool PridelitPokoj(string j, string e, string t, string n, int r, int c);
 };
 nemocnice::nemocnice(int z, int p){
     this->Zamestnanci = new doktor*[z];
@@ -169,8 +197,8 @@ nemocnice::~nemocnice(){
     }
     delete[] Pokoje;
 }
-doktor* nemocnice::VytvoritZamestnance(string j, string p){
-    this->Zamestnanci[this->ZamestnanciCount] = new doktor(j, p);
+doktor* nemocnice::VytvoritZamestnance(string j, string e, string t, int r, string p){
+    this->Zamestnanci[this->ZamestnanciCount] = new doktor(j, e, t, r, p);
     this->ZamestnanciCount++;
     return this->Zamestnanci[this->ZamestnanciCount-1];
 }
@@ -210,12 +238,12 @@ pokoj** nemocnice::GetVolnePokoje(int& len){
     len = temp2;
     return temp;
 }
-bool nemocnice::PridelitPokoj(string j, string n){
+bool nemocnice::PridelitPokoj(string j, string e, string t, string n, int r, int c){
     for (int i = 0; i < this->PokojeCount; i++)
     {
         if (Pokoje[i]->JeMisto())
         {
-            Pokoje[i]->VytvoritPacienta(j, n);
+            Pokoje[i]->VytvoritPacienta(j, e, t, n, r, c);
             return 1;
         }
     }
@@ -227,8 +255,8 @@ int main(){
     nemocnice* nem = new nemocnice(5, 5);
     nem->VytvoritPokoj(1,3);
     nem->VytvoritPokoj(2,4);
-    nem->PridelitPokoj("pepa", "rak");
-    nem->PridelitPokoj("joza", "horecka");
+    nem->PridelitPokoj("joza", "joza@seznam.cz", "60354785", "horecka", 1965, 1);
+    nem->PridelitPokoj("pepa", "pepa@seznam.cz", "65247856", "noha", 1970, 2);
     int len = 0;
     pokoj** temp = nem->GetVolnePokoje(len);
     for (int i = 0; i < len; i++)

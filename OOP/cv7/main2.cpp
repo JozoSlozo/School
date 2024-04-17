@@ -216,13 +216,13 @@ void Account::AddInterest(){
 }
 #pragma endregion
 
+#pragma region PartnerAccount
 class PartnerAccount : public Account{
     private:
         Client *partner;
     public:
         PartnerAccount(int n, Client *o, Client *p);
         PartnerAccount(int n, Client *o, Client *p, double ir);
-
         Client* GetPartner();
 };
 PartnerAccount::PartnerAccount(int n, Client *c, Client *p) : Account(n, c){
@@ -234,6 +234,7 @@ PartnerAccount::PartnerAccount(int n, Client *c, Client *p, double ir) : Account
 Client* PartnerAccount::GetPartner(){
     return this->partner;
 }
+#pragma endregion
 
 #pragma region Bank
 class Bank
@@ -241,27 +242,28 @@ class Bank
     private:
         Client** clients;
         int clientsCount;
-        Account** accounts;
+        PartnerAccount** accounts;
         int accountsCount;
     public:
-        Bank(int c, int a);
+        Bank(int c, int a, int p);
         ~Bank();
 
         Client* GetClient(int c);
-        Account* GetAccount (int n);
+        PartnerAccount* GetAccount (int n);
 
         Client* CreateClient(int c, string n);
-        Account* CreateAccount (int n, Client *c);
-        Account* CreateAccount (int n, Client *c, double ir);
+        PartnerAccount* CreateAccount (int n, Client *c);
+        PartnerAccount* CreateAccount (int n, Client *c, double ir);
         PartnerAccount* CreateAccount (int n, Client *c, Client *p);
         PartnerAccount* CreateAccount (int n, Client *c, Client *p, double ir);
         void AddInterest();
 
 };
+
 #pragma region methods
-Bank::Bank(int c, int a){
+Bank::Bank(int c, int a, int p){
     this->clients = new Client*[c];
-    this->accounts = new Account*[a];
+    this->accounts = new PartnerAccount*[a];
     this->clientsCount = 0;
     this->accountsCount = 0;
 }
@@ -287,7 +289,7 @@ Client* Bank::GetClient(int c){
     }
     return nullptr;
 }
-Account* Bank::GetAccount(int n){
+PartnerAccount* Bank::GetAccount(int n){
     for (int i = 0; i < this->accountsCount; i++)
     {
         if (this->accounts[i]->GetNumber() == n)
@@ -303,14 +305,14 @@ Client* Bank::CreateClient(int c, string n){
     this->clientsCount += 1;
     return temp;
 }
-Account* Bank::CreateAccount(int n, Client* c){
-    Account* temp = new Account(n, c);
+PartnerAccount* Bank::CreateAccount(int n, Client* c){
+    PartnerAccount* temp = new PartnerAccount(n, c, nullptr);
     this->accounts[this->accountsCount] = temp;
     this->accountsCount += 1;
     return temp;
 }
-Account* Bank::CreateAccount(int n, Client* c, double ir){
-    Account* temp = new Account(n, c, ir);
+PartnerAccount* Bank::CreateAccount(int n, Client* c, double ir){
+    PartnerAccount* temp = new PartnerAccount(n, c, nullptr, ir);
     this->accounts[this->accountsCount] = temp;
     this->accountsCount += 1;
     return temp;
@@ -381,17 +383,25 @@ string transakce::maketransactionPP(){
 }
 #pragma endregion
 
-
-
 int main(){
     int N = 100;
-    Bank* bank = new Bank(N, N);
+    Bank* bank = new Bank(N, N, N);
     for (int i = 0; i < N; i++)
     {
         char buff[50];
         sprintf(buff, "Client%d", i);
         bank->CreateClient(i, buff);
-        bank->CreateAccount(i, bank->GetClient(i), 0.05);        
+        if (i % 3 == 0)
+        {
+            char buff[50];
+            sprintf(buff, "Client%d", N*N + i);
+            Client *temp = new Client(N*N + i, buff);
+            bank->CreateAccount(i, bank->GetClient(i), temp, 0.05);
+            delete temp;     
+        }
+        else{
+            bank->CreateAccount(i, bank->GetClient(i), 0.05);     
+        }
         bank->GetAccount(i)->Deposit(rand() % 1000, 1);
     }
     for (int i = 0; i < 10; i++)
@@ -412,18 +422,9 @@ int main(){
         cout << bank->GetAccount(1)->historyPP(i) << endl;
     }
 
-    Account *a;
-    PartnerAccount *pa;
-    pa = new PartnerAccount(0, new Client(0, "Smith"), new Client(1, "jones"));
-    a = pa;
-
-    cout << a->GetOwner()->GetName() << endl;
-    //cout << a->GetPartner()->GetName() << endl;
-    cout << pa->GetPartner()->GetName() << endl;
+    cout << bank->GetAccount(30)->GetPartner()->GetName() << endl;
 
     delete bank;
-    delete pa;
-
     cout << Account::GetObjectsCount() << endl;
     cout << Client::GetObjectsCount() << endl;
     return 0;
