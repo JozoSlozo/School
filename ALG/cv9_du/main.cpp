@@ -6,6 +6,7 @@ using namespace std;
 #include <unordered_map>
 #include <cmath>
 #include <algorithm>
+#include <ostream>
 
 //8 puzzle game
 //playing field is represented by vector<int> where 0 represents empty field
@@ -45,11 +46,22 @@ vector<vector<int>> GetNextStates(const vector<int> playingField){
     return nextStates;
 }
 
-int VectorToInt(const vector<int> vec){//converts vector<int> to int, {1,2,3,4} = 1234
-    int temp = 0;
-    for (int i = 0; i < vec.size(); i++) temp += vec[i] * pow(10, vec.size()-i-1);
-    return temp;
+//https://www.programmingalgorithms.com/algorithm/sdbm-hash/cpp/
+unsigned int SDBMHash(const vector<int> vec) {
+
+    string temp = "";
+    for (int i : vec) temp += to_string(i);
+
+	unsigned int hash = 0;
+
+	for (int i = 0; i < temp.length(); i++)
+	{
+		hash = (temp[i]) + (hash << 6) + (hash << 16) - hash;
+	}
+
+	return hash;
 }
+
 
 bool IsWinning(const vector<int> check){//checks if vector is winning by comparing itself with its sorted version
     vector<int> temp = check;
@@ -59,10 +71,10 @@ bool IsWinning(const vector<int> check){//checks if vector is winning by compari
 
 bool IsPuzzleSolvable(const vector<int>& playingField, int& iterations) {//DFS search
     stack<vector<int>> stack;
-    unordered_set<int> visited;
+    unordered_set<unsigned int> visited;
 
     stack.push(playingField);
-    visited.insert(VectorToInt(playingField));
+    visited.insert(SDBMHash(playingField));
 
     while (!stack.empty()) {
         vector<int> currentState = stack.top();
@@ -75,7 +87,7 @@ bool IsPuzzleSolvable(const vector<int>& playingField, int& iterations) {//DFS s
 
         vector<vector<int>> nextStates = GetNextStates(currentState);
         for (const vector<int>& nextState : nextStates) {
-            int temp = VectorToInt(nextState);
+            unsigned int temp = SDBMHash(nextState);
             if (visited.find(temp) == visited.end()) {
                 stack.push(nextState);
                 visited.insert(temp);
@@ -87,7 +99,7 @@ bool IsPuzzleSolvable(const vector<int>& playingField, int& iterations) {//DFS s
 
 int main(){
     int iter = 0;
-    vector<int> temp = {1, 2, 3, 4, 5, 6, 7, 8, 0};
+    vector<int> temp = {1,0,2,3,4,5,6,7,8};
     if (IsPuzzleSolvable(temp, iter))
     {
         cout << "puzzle is solvable" << endl;
