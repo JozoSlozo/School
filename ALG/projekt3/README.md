@@ -2,4 +2,7 @@
 
 ## Kompilace
 
-doxygen: doxygen dconfig
+```console
+x@y:~/school/ALG/projekt3$ doxygen: doxygen dconfig
+```
+
