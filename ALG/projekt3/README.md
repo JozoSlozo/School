@@ -3,6 +3,6 @@
 ## Kompilace
 
 ```console
-x@y:~/school/ALG/projekt3$ doxygen: doxygen dconfig
+x@y:~/school/ALG/projekt3$ doxygen dconfig
 ```
 
