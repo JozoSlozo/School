@@ -3,3 +3,8 @@
 !*.*
 **/*.zip
 **/.vscode/
+doxygen/
+ALG/cube/
+**/html/
+**/latex/
+!**/dconfig
