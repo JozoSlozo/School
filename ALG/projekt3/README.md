@@ -1,5 +1,16 @@
 # Projekt ALG zadání 3
 
+## Kompilace
+doxygen
+```console
+x@y:~/school/ALG/projekt3$ doxygen dconfig
+```
+program
+```console
+x@y:~/school/ALG/projekt3$ g++ main.cpp utils.cpp polynomial.cpp -o main
+x@y:~/school/ALG/projekt3$ ./main
+```
+
 ## Zadání 
 ### Problém
 Předmětem tohoto zadání jsou polynomy, v češtině nazývané též mnohočleny. Takovým polynomem
@@ -57,15 +68,3 @@ pro 𝑥0 = 5 je
 tované funkce bez interakce s uživatelem, tj. bez toho, aby uživatel vybíral jakou akci chce
 s polynomy provést, zadával polynomy ze standardního vstupu. Testovací polynomy budou
 zadány jako konstanty ve zdrojovém kódu.
-
-
-## Kompilace
-doxygen
-```console
-x@y:~/school/ALG/projekt3$ doxygen dconfig
-```
-program
-```console
-x@y:~/school/ALG/projekt3$ g++ main.cpp utils.cpp polynomial.cpp -o main
-x@y:~/school/ALG/projekt3$ ./main
-```
