@@ -118,3 +118,15 @@ polynomial polynomial::getPolynomialDerivation()
     }
     return polynomial(fin);    
 }
+polynomial polynomial::getPolynmomialAntiderivative()
+{
+    std::vector<double> fin(this->polynomialVector.size()+1, 0);
+    fin[0] = 0;//konstanta C bude vyjadrena nulou, protoze vyjadreni neznamou by rozbilo scitani atd. 
+    for (int i = 1; i < this->polynomialVector.size()+1; i++)
+    {
+        if(this->polynomialVector[i-1] != 0){
+            fin[i] = this->polynomialVector[i-1] / i;
+        }
+    }
+    return polynomial(fin);
+}

@@ -32,6 +32,10 @@ int main()
     polynom1.getPolynomialDerivation().prettyPrintPolynomial();
     std::cout << "Derivace b: ";
     polynom2.getPolynomialDerivation().prettyPrintPolynomial();
+    std::cout << "Integrace a: ";
+    polynom1.getPolynmomialAntiderivative().prettyPrintPolynomial();
+    std::cout << "Integrace b: ";
+    polynom2.getPolynmomialAntiderivative().prettyPrintPolynomial();
     return 0;
 
 }
