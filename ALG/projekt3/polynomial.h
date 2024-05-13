@@ -90,7 +90,6 @@ public:
     polynomial getPolynomialDerivation();
     /**
     * @brief Primitivní funkce, integrace polynomu.
-    * Vytvořená konstanta C po integraci je vyjádřena nulou.
     * @return integraci polynomu
     */
     polynomial getPolynmomialAntiderivative();   
