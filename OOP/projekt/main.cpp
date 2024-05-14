@@ -2,7 +2,7 @@
 
 int main(){
     std::srand(std::time(nullptr));
-    gameMaster *hra = new gameMaster("pepa", 2, 2);
+    gameMaster *hra = new gameMaster("pepa", 5, 5);
     while (!hra->makeMove())
     {
         

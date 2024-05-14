@@ -30,6 +30,7 @@ private:
     int damage;
     int defence;
     int hitPoints;
+    int maxHp;
     double hpRegen;
     double mpRegen;
     std::vector<item*> items;
@@ -41,6 +42,7 @@ public:
     int recieveDmg(int dmg);
     int recieveHit(class enemy* enem);
     int getHp();
+    int regenHp();
 };
 
 //-------------------------------------------------FIELD-------------------------------------------------

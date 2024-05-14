@@ -46,6 +46,7 @@ player::player(std::string name, int damage, int defence, int hp, double hpr){
     this->defence = defence;
     this->hitPoints = hp;
     this->hpRegen = hpr;
+    this->maxHp = hp;
 }
 int player::addItem(item* predmet){
     this->items.push_back(predmet);
@@ -68,7 +69,7 @@ int player::recieveDmg(int dmg){
     if (temp > 0)
     {
         this->hitPoints -= temp;
-        std::cout << this->name << " obdržel " << temp << " a má " << this->hitPoints << " životů" << std::endl;
+        std::cout << this->name << " obdržel " << temp << " poškození a má " << this->hitPoints << " životů" << std::endl;
         if (this->hitPoints <= 0)
         {
             std::cout << this->name << " umírá" << std::endl;
@@ -84,6 +85,13 @@ int player::recieveDmg(int dmg){
 }
 int player::getHp(){
     return this->hitPoints;
+}
+int player::regenHp(){
+    if (!((this->hitPoints + this->hpRegen) > this->maxHp))
+    {
+        this->hitPoints += this->hpRegen;
+    }
+    return 0;
 }
 #pragma endregion
 //-------------------------------------------------FIELD-------------------------------------------------
@@ -124,15 +132,16 @@ enemy::enemy(std::string enemyName, int damage, int hp, int defence) : field("en
 }
 int enemy::playerOnField(player* gamePlayer){
     while (1)
-    {
-        this->hitPoints -= gamePlayer->getDmg();
-        std::cout << this->enemyName << " obdržel " << gamePlayer->getDmg() << " a má " << this->hitPoints << " životů" << std::endl; 
+    {   
+        int dmg = randRange(1, gamePlayer->getDmg());
+        this->hitPoints -= dmg;
+        std::cout << this->enemyName << " obdržel " << dmg << " poškození a má " << this->hitPoints << " životů" << std::endl; 
         if (this->hitPoints <= 0)
         {
             std::cout << this->enemyName << " umírá" << std::endl;
             break;
         }
-        else if (gamePlayer->recieveDmg(this->damage)){
+        else if (gamePlayer->recieveDmg(randRange(1, this->damage))){
             break;
         }
     }
@@ -157,6 +166,7 @@ int gameField::move(player* hrac){
 }
 field* gameField::getRandomField(){
     std::vector<int> vahy = {50, 25, 25};
+    std::vector<std::string> enemyNames = {"zombie", "upír", "troll", "ghul", "drak"};
     int pole = weightedRandom(vahy);
     switch (pole)
     {
@@ -169,7 +179,7 @@ field* gameField::getRandomField(){
         return new chest(randRange(position, position + 10));
     case 2:
         std::cout << "Hráč stoupnul na pole s nepřítelem" << std::endl;
-        return new enemy("zombie", randRange(position, position + 10), randRange(position, position + 10), randRange(position, position + 10));
+        return new enemy(enemyNames[randRange(0, enemyNames.size())], randRange(position, position + 10), randRange(position, position + 10), randRange(position, position + 10));
     default:
         return nullptr;
         break;
@@ -191,13 +201,14 @@ gameMaster::~gameMaster(){
     delete this->playerGame;
 }
 int gameMaster::makeMove(){
-    std::cout << "Nové kolo, pozice hráče: " << this->playerField->getPos() << std::endl;
+    std::cout << "--------------------------------------------------------------------------------\nNové kolo, pozice hráče: " << this->playerField->getPos() << "\n--------------------------------------------------------------------------------" << std::endl;
     this->playerField->move(this->playerGame);
     if (this->playerGame->getHp() <= 0)
     {   
         std::cout << "Konec hry" << std::endl;
         return 1;
     }
+    this->playerGame->regenHp();
     return 0;
 }
 #pragma endregion
