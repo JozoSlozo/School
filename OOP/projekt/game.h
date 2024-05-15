@@ -33,11 +33,11 @@ private:
     int hitPoints;
     int maxHp;
     double hpRegen;
-    double mpRegen;
     std::vector<item*> items;
 
 public:
     player(std::string name, int damage, int defence, int hp, double hpr);
+    player(std::string name);
     int addItem(item* predmet);
     int getDmg();
     int recieveDmg(int dmg);
@@ -103,7 +103,7 @@ private:
 
 public:
     static int position;
-    gameMaster(std::string pname, int pdamage, int pdefence);
+    gameMaster(std::string pname);
     int makeMove();
     ~gameMaster();
 };

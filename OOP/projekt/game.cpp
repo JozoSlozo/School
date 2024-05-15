@@ -8,7 +8,7 @@
 
 int gameMaster::position = 0;
 
-//-------------------------------------------------UTIL-------------------------------------------------
+//-------------- pdamage, pdefence, 20, 1-----------------------------------UTIL-------------------------------------------------
 #pragma region util
 int weightedRandom(std::vector<int> vahy){
     int pole = rand()%100;
@@ -46,13 +46,21 @@ int item::getHP(){
 #pragma endregion
 //-------------------------------------------------PLAYER-------------------------------------------------
 #pragma region player
-player::player(std::string name, int damage, int defence, int hp, double hpr){
+player::player(std::string name, int damage, int defence, int hp, double hpr){//4 - přetiženi
     this->name = name;
     this->damage = damage;
     this->defence = defence;
     this->hitPoints = hp;
     this->hpRegen = hpr;
     this->maxHp = hp;
+}
+player::player(std::string name){
+    this->name = name;
+    this->damage = 5;
+    this->defence = 5;
+    this->hitPoints = 20;
+    this->hpRegen = 1;
+    this->maxHp = 20;
 }
 int player::addItem(item* predmet){
     this->items.push_back(predmet);
@@ -118,12 +126,12 @@ chest::chest(int ratiry) : field("truhla"){
 int chest::playerOnField(player* gamePlayer){
     std::vector<std::string> nazvy = {"meč", "šťít", "brnění"};
     std::vector<std::vector<int>> staty {
-        {1, 0, 0},
-        {0, 1, 0},
+        {2, 0, 0},
+        {0, 2, 0},
         {0, 1, 1}
     };
     int predmet = randRange(0, 3);
-    item* temp = new item(nazvy[predmet], staty[predmet][0] * randRange(rarity, rarity+5), staty[predmet][1] * randRange(rarity, rarity+5), staty[predmet][2] * randRange(rarity, rarity+5));
+    item* temp = new item(nazvy[predmet], staty[predmet][0] * randRange(rarity, rarity+2), staty[predmet][1] * randRange(rarity, rarity+2), staty[predmet][2] * randRange(rarity, rarity+2));
     std::cout << "Hráč otevřel truhlu s " << nazvy[predmet] << std::endl;
     gamePlayer->addItem(temp);
     return 0;
@@ -161,12 +169,12 @@ int enemy::getDmg(){
 #pragma endregion
 //-------------------------------------------------GAMEFIELD-------------------------------------------------
 #pragma region gameField
-gameField::gameField()
+gameField::gameField()//3 - kompozice
 {
 }
 int gameField::move(player* hrac){
     this->actualField.push_back(this->getRandomField());
-    this->actualField[gameMaster::position]->playerOnField(hrac);
+    this->actualField[gameMaster::position]->playerOnField(hrac);//
     gameMaster::position++;
     return 0;
 }
@@ -195,8 +203,8 @@ field* gameField::getRandomField(){
 #pragma endregion
 //-------------------------------------------------GAMEMASTER-------------------------------------------------
 #pragma region gameMaster
-gameMaster::gameMaster(std::string pname, int pdamage, int pdefence){
-    this->playerGame = new player(pname, pdamage, pdefence, 20, 1);
+gameMaster::gameMaster(std::string pname){//3. kompozice
+    this->playerGame = new player(pname);
     this->playerField = new gameField();
 }
 gameMaster::~gameMaster(){
