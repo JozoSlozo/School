@@ -5,6 +5,9 @@
 #include <vector>
 #include <iostream>
 #include "game.h"
+
+int gameMaster::position = 0;
+
 //-------------------------------------------------UTIL-------------------------------------------------
 #pragma region util
 int weightedRandom(std::vector<int> vahy){
@@ -37,6 +40,9 @@ int item::getDamage(){
 int item::getDefence(){
     return this->defence;
 }
+int item::getHP(){
+    return this->hitPoints;
+}
 #pragma endregion
 //-------------------------------------------------PLAYER-------------------------------------------------
 #pragma region player
@@ -50,6 +56,7 @@ player::player(std::string name, int damage, int defence, int hp, double hpr){
 }
 int player::addItem(item* predmet){
     this->items.push_back(predmet);
+    this->maxHp += predmet->getHP();
     return 0;
 }
 int player::getDmg(){
@@ -156,12 +163,11 @@ int enemy::getDmg(){
 #pragma region gameField
 gameField::gameField()
 {
-    this->position = 0;
 }
 int gameField::move(player* hrac){
     this->actualField.push_back(this->getRandomField());
-    this->actualField[this->position]->playerOnField(hrac);
-    this->position += 1;
+    this->actualField[gameMaster::position]->playerOnField(hrac);
+    gameMaster::position++;
     return 0;
 }
 field* gameField::getRandomField(){
@@ -176,18 +182,15 @@ field* gameField::getRandomField(){
         break;
     case 1:
         std::cout << "Hráč stoupnul na pole s truhlou" << std::endl;
-        return new chest(randRange(position, position + 10));
+        return new chest(randRange(gameMaster::position, gameMaster::position + 10));
     case 2:
         std::cout << "Hráč stoupnul na pole s nepřítelem" << std::endl;
-        return new enemy(enemyNames[randRange(0, enemyNames.size())], randRange(position, position + 10), randRange(position, position + 10), randRange(position, position + 10));
+        return new enemy(enemyNames[randRange(0, enemyNames.size())], randRange(gameMaster::position, gameMaster::position + 10), randRange(gameMaster::position, gameMaster::position + 10), randRange(gameMaster::position, gameMaster::position + 10));
     default:
         return nullptr;
         break;
     }
     return nullptr;
-}
-int gameField::getPos(){
-    return this->position;
 }
 #pragma endregion
 //-------------------------------------------------GAMEMASTER-------------------------------------------------
@@ -200,8 +203,9 @@ gameMaster::~gameMaster(){
     delete this->playerField;
     delete this->playerGame;
 }
+
 int gameMaster::makeMove(){
-    std::cout << "--------------------------------------------------------------------------------\nNové kolo, pozice hráče: " << this->playerField->getPos() << "\n--------------------------------------------------------------------------------" << std::endl;
+    std::cout << "--------------------------------------------------------------------------------\nNové kolo, pozice hráče: " << gameMaster::position << "\n--------------------------------------------------------------------------------" << std::endl;
     this->playerField->move(this->playerGame);
     if (this->playerGame->getHp() <= 0)
     {   

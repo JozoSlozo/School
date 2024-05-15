@@ -20,6 +20,7 @@ public:
     item(std::string name, int damage, int defence, int hp);
     int getDamage();
     int getDefence();
+    int getHP();
 };
 
 //-------------------------------------------------PLAYER-------------------------------------------------
@@ -86,13 +87,11 @@ class gameField
 {
 private:
     std::vector<field*> actualField;
-    int position;
 
 public:
     gameField();
     field* getRandomField();
     int move(class player* hrac);
-    int getPos();
 };
 
 //-------------------------------------------------GAMEMASTER-------------------------------------------------
@@ -100,10 +99,10 @@ class gameMaster
 {
 private:
     player* playerGame;
-    int position;
     gameField* playerField;
 
 public:
+    static int position;
     gameMaster(std::string pname, int pdamage, int pdefence);
     int makeMove();
     ~gameMaster();
