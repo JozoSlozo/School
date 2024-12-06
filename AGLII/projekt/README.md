@@ -1,7 +1,6 @@
-
-##Zadání čislo 2
-##Minimální cena přepravy zboží
-###Problém
+##Zadání čislo 2##
+##Minimální cena přepravy zboží##
+###Problém###
 V tomto zadání máte za úkol optimalizovat cenu přepravy zboží v logistické síti mezi městy, která
 je reprezentována jako neorientovaný vážený graf. Města představují vrcholy grafu, cesty jsou re-
 prezentovány neorientovanými váženými hranami, kde váha představuje cenu přepravy zboží mezi
