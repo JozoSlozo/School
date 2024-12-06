@@ -5,95 +5,100 @@
 using std::vector;
 using std::pair;
 
-typedef pair<double, int> vertex;
-
-/**
- * @brief Funkce vytvoří cestu ze začátečního vrcholu do konečného
- */
-vector<int> dijkstraAlgorythm::constructFinalPath() {
-    vector<int> final_path_vector;
+vector<int> dijkstraAlgorythm::constructPath(int first_or_second){
+    vector<int> path;
     int current_vertex = end_vertex;
-    final_path_vector.push_back(current_vertex);
+    path.push_back(current_vertex);
     while (current_vertex != start_vertex) {
-        current_vertex = parent_vertex[current_vertex];
-        final_path_vector.push_back(current_vertex);
+        current_vertex = first_or_second == 0 ? parent_vertex[current_vertex].first : parent_vertex[current_vertex].second;
+        path.push_back(current_vertex);
     }
-    std::reverse(final_path_vector.begin(), final_path_vector.end());
-    return final_path_vector;
+    std::reverse(path.begin(), path.end()); 
+    return path;
 }
 
 /**
- * @brief Funkce hledající nejlevnější cestu mezi začátečním a konečným vrcholem
+ * @brief Vytvoří cestu z počátečního vrcholu do cílového.
  */
-double dijkstraAlgorythm::solveDijkstra(const vector<vector<double>>& input_adjacency_matrix) {
-    distance_to_vertex[start_vertex] = 0;
-    dijkstra_queue.push({0, start_vertex});
+int dijkstraAlgorythm::constructFinalPath() {
+    final_path = constructPath(0);
+    final_path_discounted = constructPath(1);
+    return 0;
+}
+
+/**
+ * @brief Hledá nejlevnější cestu mezi počátečním a cílovým vrcholem pomocí Dijkstrova algoritmu.
+ */
+int dijkstraAlgorythm::solveDijkstra() {
+
+    //set starting vertex distance to 0
+    cost_to_vertex[start_vertex].cost = 0;
+    cost_to_vertex[start_vertex].cost_discounted = 0;
+
+    dijkstra_queue.push(dijsktraVertex(start_vertex, 0, 0));
+
     while (!dijkstra_queue.empty()) {
-        vertex current_vertex = dijkstra_queue.top();
+        dijsktraVertex current_vertex = dijkstra_queue.top(); //top is always the cheapest vertex to get to
         dijkstra_queue.pop();
-        if (current_vertex.first > distance_to_vertex[current_vertex.second]) {
+
+        if (current_vertex.getMinDistance() > cost_to_vertex[current_vertex.index].getMinDistance()) {
             continue;
         }
-        if (current_vertex.second == end_vertex) {
-            return distance_to_vertex[end_vertex] == std::numeric_limits<double>::max() ? -1 : distance_to_vertex[end_vertex];
+        
+        if (current_vertex.index == end_vertex) { //if end reached
+            final_cost = cost_to_vertex[end_vertex].cost;
+            final_cost_discounted = cost_to_vertex[end_vertex].cost_discounted;
+            return 0;
         }
 
         for (int end_vertex = 0; end_vertex < size; end_vertex++) {
-            double current_cost = input_adjacency_matrix[current_vertex.second][end_vertex];
-            if (current_cost <= 0) {//if is valid 
+
+            double current_cost = adjacency_matrix[current_vertex.index][end_vertex]; //gets cost of current edge
+            
+            if (current_cost <= 0) { //if the edge is not valid
                 continue;
             }
-            double new_distance = distance_to_vertex[current_vertex.second] + current_cost;
-            if (new_distance < distance_to_vertex[end_vertex]) {
-                distance_to_vertex[end_vertex] = new_distance;
-                parent_vertex[end_vertex] = current_vertex.second;
-                dijkstra_queue.push({new_distance, end_vertex});
+            
+            double new_cost = cost_to_vertex[current_vertex.index].cost + current_cost; //not discounted cost
+            //discounted cost, we cant add 2 discounted paths together
+            double new_cost_discounted = std::min(cost_to_vertex[current_vertex.index].cost_discounted + current_cost, cost_to_vertex[current_vertex.index].cost + (current_cost / 2));
+            
+            dijsktraVertex temp = dijsktraVertex(end_vertex, cost_to_vertex[end_vertex].cost, cost_to_vertex[end_vertex].cost_discounted);
+            int changed = 0;
+
+            if (new_cost < cost_to_vertex[end_vertex].cost) {
+                cost_to_vertex[end_vertex].cost = new_cost;
+                parent_vertex[end_vertex].first = current_vertex.index;
+                temp.cost = new_cost;
+                changed = 1;
             }
+            if (new_cost_discounted < cost_to_vertex[end_vertex].cost_discounted) {
+                cost_to_vertex[end_vertex].cost_discounted = new_cost_discounted;
+                parent_vertex[end_vertex].second = current_vertex.index;
+                temp.cost_discounted = new_cost_discounted;
+                changed = 1;
+            }
+            if (changed) {
+                dijkstra_queue.push(temp);
+            }
+            
         }
     }
-    return distance_to_vertex[end_vertex] == std::numeric_limits<double>::max() ? -1 : distance_to_vertex[end_vertex];
+    final_cost = cost_to_vertex[end_vertex].cost;
+    final_cost_discounted = cost_to_vertex[end_vertex].cost_discounted;
+    return 0;
 }
 
 /**
- * @brief Hledá nejlevnější cestu po zlevnění jedné hrany
- */
-void dijkstraAlgorythm::getDiscounted() {
-    double min_cost = std::numeric_limits<double>::max();
-    vector<int> best_path;
-     
-    for (int row = 0; row < size; ++row) {
-        for (int column = row + 1; column < size; ++column) {
-            if (adjacency_matrix[row][column] > 0) {
-                auto originalCost = adjacency_matrix[row][column];
-                adjacency_matrix[row][column] *= 0.5;
-                adjacency_matrix[column][row] *= 0.5;
-
-                double current_cost = solveDijkstra(adjacency_matrix);
-                if (current_cost != -1 && current_cost < min_cost) {
-                    min_cost = current_cost;
-                    best_path = constructFinalPath();
-                }
-
-                adjacency_matrix[row][column] = originalCost;
-                adjacency_matrix[column][row] = originalCost;
-            }
-        }
-    }
-    final_cost_discounted = min_cost;
-    final_path_discounted = best_path;
-}
-
-/**
- * @brief Konstruktor funkce, spouští se zde funkce řešící algoritmus
+ * @brief Konstruktor třídy, který spouští Dijkstrovu algoritmus pro hledání nejkratší cesty.
  */
 dijkstraAlgorythm::dijkstraAlgorythm(vector<vector<double>> adjacency_matrix_input, int start_vertex_input, int end_vertex_input, int adjacency_matrix_size) {
     this->size = adjacency_matrix_size;
-    this->distance_to_vertex = vector<double>(this->size, std::numeric_limits<double>::max());
-    this->parent_vertex = vector<int>(this->size, -1);
+    this->cost_to_vertex = vector<dijsktraVertex>(this->size, dijsktraVertex(-1));
+    this->parent_vertex = vector<pair<int, int>>(this->size, {-1, -1});
     this->start_vertex = start_vertex_input;
     this->end_vertex = end_vertex_input;
     this->adjacency_matrix = adjacency_matrix_input;
-    final_cost = solveDijkstra(adjacency_matrix);
-    final_path = constructFinalPath();
-    getDiscounted();
+    solveDijkstra();
+    constructFinalPath();
 }

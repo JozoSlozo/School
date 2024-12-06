@@ -32,8 +32,16 @@ int readFile(const string& file_name, vector<vector<double>>& final_matrix, int&
     }
     std::getline(file, line);
     start = std::stoi(line);
+    if (start > size)
+    {
+        return 0;
+    }
     std::getline(file, line);
     end = std::stoi(line);
+    if (end > size)
+    {
+        return 0;
+    }
     file.close();
     return 1;
 }
