@@ -8,56 +8,61 @@ using std::cout, std::endl, std::vector, std::string;
 class cuckooHashTable
 {
 private:
-    vector<string> table1;
-    vector<string> table2;
+    vector<vector<string>> tables;
     double maxOccupancy;
     double increaseFactor;
     int numberOfItems;
     int max_loops;
-    int size1;
-    int size2;
 
     size_t hashFunction(const string& key, size_t size){
         return size == 0 ? 0 : std::hash<string>{}(key) % size;
     }
 
 public:
-    cuckooHashTable(double inMaxOccupany, double inIncreaseFactor, int maxLoops, int insize1, int insize2){
-        table1 = vector<string>(insize1, "");
-        table2 = vector<string>(insize2, "");
+    cuckooHashTable(double inMaxOccupany, double inIncreaseFactor, int maxLoops, vector<size_t> tablesizes){
+        for (size_t i : tablesizes)
+        {
+            tables.push_back(vector<string>(i, ""));
+        }
         maxOccupancy = inMaxOccupany;
         increaseFactor = inIncreaseFactor;
         max_loops = maxLoops;
         numberOfItems = 0;
-        size1 = insize1;
-        size2 = insize2;
     }
     bool lookup(const string& key){
-        if (table1[hashFunction(key, table1.size())] == key)
+        for (size_t i = 0; i < tables.size(); i++)
         {
-            return true;
-        }
-        if (table2[hashFunction(key, table2.size())] == key)
-        {
-            return true;
+            if (tables[i][hashFunction(key, tables[i].size())] == key)
+            {
+                return true;
+            }
         }
         return false;
     }
     void resize(){
-        vector<string> temp1 = table1;
-        vector<string> temp2 = table2;
-        table1 = vector<string>(static_cast<double>(table1.size()) * increaseFactor, "");
-        table2 = vector<string>(static_cast<double>(table2.size()) * increaseFactor, "");
-        numberOfItems = 0;
-        for (const auto& key : temp1) {
-            if (!key.empty()) insert(key);
+        vector<vector<string>> temp = tables;
+        for (size_t i = 0; i < tables.size(); i++)
+        {
+            tables[i] = vector<string>(static_cast<double>(tables[i].size()) * increaseFactor, "");
         }
-        for (const auto& key : temp2) {
-            if (!key.empty()) insert(key);
+        numberOfItems = 0;
+        for (size_t i = 0; i < tables.size(); i++)
+        {
+            for (const auto& key : temp[i]) {
+                if (!key.empty()) 
+                {
+                    insert(key);
+                }
+            }
         }
     }
     bool needsresize(){
-        return (static_cast<double>(numberOfItems) / (table1.size() + table2.size())) > maxOccupancy;
+        size_t size = 0;
+        for (size_t i = 0; i < tables.size(); i++)
+        {
+            size += tables[i].size();
+        }
+        return (static_cast<double>(numberOfItems) / size) > maxOccupancy;
     }
     void insert(const string& key){
         if (lookup(key))
@@ -71,59 +76,48 @@ public:
         string keyCopy = key;
         for (int i = 0; i < max_loops; i++)
         {
-            size_t index = hashFunction(keyCopy, table1.size());
-            if (table1[index].empty())
+            for (size_t a = 0; a < tables.size(); a++)
             {
-                numberOfItems++;
-                table1[index] = std::move(keyCopy);
-                return;
+                size_t index = hashFunction(keyCopy, tables[a].size());
+                if (tables[a][index].empty())
+                {
+                    numberOfItems++;
+                    tables[a][index] = std::move(keyCopy);
+                    return;
+                }
+                std::swap(keyCopy, tables[a][index]);
             }
-            std::swap(keyCopy, table1[index]);
-            index = hashFunction(keyCopy, table2.size());
-            if (table2[index].empty())
-            {
-                numberOfItems++;
-                table2[index] = std::move(keyCopy);
-                return;
-            }
-            std::swap(keyCopy, table2[index]);
         }
         resize();
         insert(key);
     }
-    void remove(const string key){
-        if (table1[hashFunction(key, table1.size())] == key)
+    void remove(const string& key){
+        for (size_t i = 0; i < tables.size(); i++)
         {
-            table1[hashFunction(key, table1.size())] = "";
-            numberOfItems--;
-        }
-        else if (table2[hashFunction(key, table2.size())] == key)
-        {
-            table2[hashFunction(key, table2.size())] = "";
-            numberOfItems--;
-        }
-        else
-        {
-            return;
+            size_t index = hashFunction(key, tables[i].size());
+            if (tables[i][index] == key)
+            {
+                tables[i][index] = "";
+                numberOfItems--;
+                return;
+            }
         }
     }
 
     void ppTable(){
-        cout << "Table" << 1 << "\n";
-        for (size_t a = 0; a < table1.size(); a++)
+        int temp = 1;
+        for (vector<string> i : tables)
         {
-            if (!table1[a].empty())
+            cout << "Table" << temp << ":\n";
+            temp++;
+            for (size_t a = 0; a < i.size(); a++)
             {
-                cout << a << ": " << table1[a] << " ";
+                if (!i[a].empty())
+                {
+                    cout << a << ": " << i[a] << " ";
+                }
             }
-        }
-        cout << "\nTable" << 2 << "\n";
-        for (size_t a = 0; a < table2.size(); a++)
-        {
-            if (!table2[a].empty())
-            {
-                cout << a << ": " << table2[a] << " ";
-            }
+            cout << "\n";
         }
         cout << "\n";
     }
@@ -139,7 +133,8 @@ int main(){
     const auto removals = { "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five", 
     "twenty-six", "twenty-seven", "twenty-eight", "twenty-nine",
     "aardvark", "Bene Gesserit", "crane", "dog", "element"};
-    cuckooHashTable cuckoo = cuckooHashTable(0.5, 1.5, 5, 10, 11);
+    vector<size_t> tablesizes = {10,11};
+    cuckooHashTable cuckoo = cuckooHashTable(0.5, 1.5, 5, tablesizes);
     for (string i : inputs)
     {
         cuckoo.insert(i);
