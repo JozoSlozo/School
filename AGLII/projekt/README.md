@@ -12,8 +12,6 @@ těmito městy. Vaším úkolem je nalézt trasu s minimální cenou přepravy z
 cenu přepravy.
 ### Řešení
 Problém řešíme použitím Dijkstrova algoritmu pro hledání nejkratší cesty mezi vrcholy grafu. Dijkstrův algorytmus upravíme, pro vyhledávání cesty se slevou a to tak že si pro každý vrchol pamatujeme cenu beze slevy a cenu ze slevou. Protože chceme aby sleva byla použita jenom jednou musíme vždy přičitat neslevněnou cestu se slevněnou. Počítáni se slevou by nemělo změnit časovou náročnost algorytmu.
-### Testy
-Pro algorytmus jsou 2 testovací soubory, první test soubor je soubor ze zadání projektu a druhý je graf, viz obrázek GraphTest2.png (na obrazku je indexovani vrcholu od 1 v algorytmu od 0).
 ### Kompilace
 ```
 g++ ./main.cpp DijkstraAlgorythm.cpp -o main

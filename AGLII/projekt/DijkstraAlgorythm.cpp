@@ -46,6 +46,12 @@ int dijkstraAlgorythm::solveDijkstra() {
         }
         
         if (current_vertex.index == end_vertex) { //if end reached
+            if (cost_to_vertex[end_vertex].cost == std::numeric_limits<double>::max() || cost_to_vertex[end_vertex].cost_discounted == std::numeric_limits<double>::max())
+            {
+                final_cost = -1;
+                final_cost_discounted = -1;
+                return 1;
+            }
             final_cost = cost_to_vertex[end_vertex].cost;
             final_cost_discounted = cost_to_vertex[end_vertex].cost_discounted;
             return 0;
@@ -84,6 +90,12 @@ int dijkstraAlgorythm::solveDijkstra() {
             
         }
     }
+    if (cost_to_vertex[end_vertex].cost == std::numeric_limits<double>::max() || cost_to_vertex[end_vertex].cost_discounted == std::numeric_limits<double>::max())
+    {
+        final_cost = -1;
+        final_cost_discounted = -1;
+        return 1;
+    }
     final_cost = cost_to_vertex[end_vertex].cost;
     final_cost_discounted = cost_to_vertex[end_vertex].cost_discounted;
     return 0;
@@ -99,6 +111,8 @@ dijkstraAlgorythm::dijkstraAlgorythm(vector<vector<double>> adjacency_matrix_inp
     this->start_vertex = start_vertex_input;
     this->end_vertex = end_vertex_input;
     this->adjacency_matrix = adjacency_matrix_input;
-    solveDijkstra();
-    constructFinalPath();
+    if (!solveDijkstra())
+    {
+        constructFinalPath();
+    }
 }

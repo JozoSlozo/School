@@ -61,17 +61,19 @@ int main(int argc, char* argv[]) {
 
     cout << std::fixed << std::setprecision(2);
 
-    cout << "Nejlevnější cena cesty: " << da.final_cost  << "\nNejlevnější cesta: ";
+    cout << "Nejlevnější cena cesty: " << da.final_cost  << " cesta [";
 
-    for (int i : da.final_path) {
-        cout << i << ", ";
+    for (size_t i = 0; i < da.final_path.size(); i++)
+    {
+        cout << i << (i == da.final_path.size()-1 ? "" : ", ");
     }
-    cout << "\n";
-    cout << "Nejlevnější cena cesty se slevou: " << da.final_cost_discounted  << "\nNejlevnější cesta se slevou: ";
+    cout << "]\n";
+    cout << "Nejlevnější cena cesty se slevou: " << da.final_cost_discounted  << " cesta: [";
 
-    for (int i : da.final_path_discounted) {
-        cout << i << ", ";
+    for (size_t i = 0; i < da.final_path_discounted.size(); i++)
+    {
+        cout << i << (i == da.final_path_discounted.size()-1 ? "" : ", ");
     }
-    cout << "\n";
+    cout << "]\n";
     return 0;
 }
